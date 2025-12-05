@@ -146,7 +146,7 @@ class CacheOpenAI(BaseLLM):
 
         if self.global_config.azure_endpoint is None:
             self.openai_client = OpenAI(base_url=self.llm_base_url, http_client=client, max_retries=self.max_retries)
-        else:
+        else:            print("using Azure OpenAI endpoint:", self.global_config.azure_endpoint)
             self.openai_client = AzureOpenAI(api_version=self.global_config.azure_endpoint.split('api-version=')[1],
                                              azure_endpoint=self.global_config.azure_endpoint, max_retries=self.max_retries)
 
@@ -182,9 +182,15 @@ class CacheOpenAI(BaseLLM):
         if 'gpt' not in params['model'] or version.parse(openai.__version__) < version.parse("1.45.0"): # if we use vllm to call openai api or if we use openai but the version is too old to use 'max_completion_tokens' argument
             # TODO strange version change in openai protocol, but our current vllm version not changed yet
             params['max_tokens'] = params.pop('max_completion_tokens')
-
-        response = self.openai_client.chat.completions.create(**params)
-
+        try: 
+            response = self.openai_client.chat.completions.create(**params)
+        except Exception as e:
+            print("OpenAI API call failed with exception:", e)
+            return "", {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "finish_reason": "error"+str(e),
+            }
         response_message = response.choices[0].message.content
         assert isinstance(response_message, str), "response_message should be a string"
         

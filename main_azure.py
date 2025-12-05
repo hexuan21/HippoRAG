@@ -70,11 +70,15 @@ def get_gold_answers(samples):
     return gold_answers
 
 def main():
+    # export AZURE_ENDPOINT_URL=""
+    # export AZURE_OPENAI_API_KEY=""
+    
+    
     parser = argparse.ArgumentParser(description="HippoRAG retrieval and QA")
-    parser.add_argument('--dataset', type=str, default='musique', help='Dataset name')
-    parser.add_argument('--llm_base_url', type=str, default='https://api.openai.com/v1', help='LLM base URL')
-    parser.add_argument('--llm_name', type=str, default='gpt-4o-mini', help='LLM name')
-    parser.add_argument('--embedding_name', type=str, default='text-embedding-3-small', help='embedding model name')
+    parser.add_argument('--dataset', type=str, default="hotpotqa", help='Dataset name')
+    parser.add_argument('--llm_base_url', type=str, default=None, help='LLM base URL')
+    parser.add_argument('--llm_name', type=str, default="gpt-4o", help='LLM name')
+    parser.add_argument('--embedding_model_name', type=str, default="nvidia/NV-Embed-v2", help='embedding model name')
     parser.add_argument('--azure_endpoint', type=str, default=None, help='Azure Endpoint URL')
     parser.add_argument('--azure_embedding_endpoint', type=str, default=None, help='Azure Embedding Endpoint')
     parser.add_argument('--force_index_from_scratch', type=str, default='false',
@@ -94,9 +98,11 @@ def main():
 
     llm_base_url = args.llm_base_url
     llm_name = args.llm_name
-    azure_endpoint = args.azure_endpoint
-    azure_embedding_endpoint = args.azure_embedding_endpoint
-
+    embedding_model_name=args.embedding_model_name
+    
+    azure_endpoint = os.getenv('AZURE_ENDPOINT_URL', None)
+    azure_embedding_endpoint = None 
+    
     corpus_path = f"reproduce/dataset/{dataset_name}_corpus.json"
     with open(corpus_path, "r") as f:
         corpus = json.load(f)
@@ -124,7 +130,7 @@ def main():
         azure_endpoint=azure_endpoint,
         azure_embedding_endpoint=azure_embedding_endpoint,
         dataset=dataset_name,
-        embedding_model_name=args.embedding_name,
+        embedding_model_name=embedding_model_name,
         force_index_from_scratch=force_index_from_scratch,  # ignore previously stored index, set it to False if you want to use the previously stored index and embeddings
         force_openie_from_scratch=force_openie_from_scratch,
         rerank_dspy_file_path="src/hipporag/prompts/dspy_prompts/filter_llama3.3-70B-Instruct.json",

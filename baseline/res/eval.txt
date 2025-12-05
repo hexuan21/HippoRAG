@@ -1,0 +1,6 @@
+# anser_model         em     f1     acc
+# gpt-4o-mini no-ctx  20.70  33.14
+# gpt-4o no-ctx       35.80  47.72
+# gpt-5-mini no-ctx   41.50  52.74 
+
+# gpt-4o gold-ctx     63.00  77.60 

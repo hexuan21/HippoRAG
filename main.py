@@ -14,6 +14,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import logging
 
+import time
+
+
 def get_gold_docs(samples: List, dataset_name: str = None) -> List:
     gold_docs = []
     for sample in samples:
@@ -67,9 +70,12 @@ def get_gold_answers(samples):
     return gold_answers
 
 def main():
+    # export OPENAI_BASE_URL=""
+    # export OPENAI_API_KEY=""
+    
     parser = argparse.ArgumentParser(description="HippoRAG retrieval and QA")
-    parser.add_argument('--dataset', type=str, default='musique', help='Dataset name')
-    parser.add_argument('--llm_base_url', type=str, default='https://api.openai.com/v1', help='LLM base URL')
+    parser.add_argument('--dataset', type=str, default='hotpotqa', help='Dataset name')
+    parser.add_argument('--llm_base_url', type=str, default=None, help='LLM base URL')
     parser.add_argument('--llm_name', type=str, default='gpt-4o-mini', help='LLM name')
     parser.add_argument('--embedding_name', type=str, default='nvidia/NV-Embed-v2', help='embedding model name')
     parser.add_argument('--force_index_from_scratch', type=str, default='false',
@@ -82,26 +88,28 @@ def main():
 
     dataset_name = args.dataset
     save_dir = args.save_dir
-    llm_base_url = args.llm_base_url
-    llm_name = args.llm_name
+    # llm_base_url = args.llm_base_url
+    llm_base_url=os.environ["OPENAI_BASE_URL"]
+    llm_name = args.llm_name    
     if save_dir == 'outputs':
         save_dir = save_dir + '/' + dataset_name
     else:
         save_dir = save_dir + '_' + dataset_name
-
+        
+    s_t=time.time()
     corpus_path = f"reproduce/dataset/{dataset_name}_corpus.json"
     with open(corpus_path, "r") as f:
         corpus = json.load(f)
-
+    
     docs = [f"{doc['title']}\n{doc['text']}" for doc in corpus]
 
     force_index_from_scratch = string_to_bool(args.force_index_from_scratch)
     force_openie_from_scratch = string_to_bool(args.force_openie_from_scratch)
-
+    
     # Prepare datasets and evaluation
     samples = json.load(open(f"reproduce/dataset/{dataset_name}.json", "r"))
     all_queries = [s['question'] for s in samples]
-
+    
     gold_answers = get_gold_answers(samples)
     try:
         gold_docs = get_gold_docs(samples, dataset_name)
@@ -118,21 +126,31 @@ def main():
         force_index_from_scratch=force_index_from_scratch,  # ignore previously stored index, set it to False if you want to use the previously stored index and embeddings
         force_openie_from_scratch=force_openie_from_scratch,
         rerank_dspy_file_path="src/hipporag/prompts/dspy_prompts/filter_llama3.3-70B-Instruct.json",
-        retrieval_top_k=200,
-        linking_top_k=5,
-        max_qa_steps=3,
-        qa_top_k=5,
+        retrieval_top_k=300,
+        linking_top_k=7,
+        max_qa_steps=5,
+        qa_top_k=7,
         graph_type="facts_and_sim_passage_node_unidirectional",
         embedding_batch_size=8,
         max_new_tokens=None,
         corpus_len=len(corpus),
-        openie_mode=args.openie_mode
+        openie_mode=args.openie_mode,
     )
 
+    # retrieval_top_k=200,
+    # linking_top_k=5,
+    # max_qa_steps=3,
+    # qa_top_k=5,
+        
+    # retrieval_top_k=300,
+    # linking_top_k=7,
+    # max_qa_steps=5,
+    # qa_top_k=7,
+
     logging.basicConfig(level=logging.INFO)
-
+    
     hipporag = HippoRAG(global_config=config)
-
+    
     hipporag.index(docs)
 
     # Retrieval and QA

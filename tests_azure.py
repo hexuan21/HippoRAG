@@ -12,8 +12,8 @@ def main():
     parser.add_argument('--azure_embedding_endpoint', type=str, default=None, help='Azure Embedding Endpoint')
     args = parser.parse_args()
 
-    azure_endpoint = args.azure_endpoint
-    azure_embedding_endpoint = args.azure_embedding_endpoint
+    azure_endpoint = "https://plugmem-resource.cognitiveservices.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-12-01-preview"
+    azure_embedding_endpoint = None
 
     # Prepare datasets and evaluation
     docs = [
@@ -29,8 +29,8 @@ def main():
     ]
 
     save_dir = 'outputs/azure_test'  # Define save directory for HippoRAG objects (each LLM/Embedding model combination will create a new subdirectory)
-    llm_model_name = 'gpt-4o-mini'  # Any OpenAI model name
-    embedding_model_name = 'text-embedding-3-small'  # Embedding model name (NV-Embed, GritLM or Contriever for now)
+    llm_model_name = "gpt-4o-mini"  # Any OpenAI model name
+    embedding_model_name = "nvidia/NV-Embed-v2"  # Embedding model name (NV-Embed, GritLM or Contriever for now)
 
     # Startup a HippoRAG instance
     hipporag = HippoRAG(save_dir=save_dir,
@@ -70,53 +70,54 @@ def main():
                                   gold_docs=gold_docs,
                                   gold_answers=answers)[-2:])
 
-    # Startup a HippoRAG instance
-    hipporag = HippoRAG(save_dir=save_dir,
-                        llm_model_name=llm_model_name,
-                        embedding_model_name=embedding_model_name,
-                        azure_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview",
-                        azure_embedding_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/text-embedding-3-small/embeddings?api-version=2023-05-15"
-                        )
 
-    print(hipporag.rag_qa(queries=queries,
-                                  gold_docs=gold_docs,
-                                  gold_answers=answers)[-2:])
+    # # Startup a HippoRAG instance
+    # hipporag = HippoRAG(save_dir=save_dir,
+    #                     llm_model_name=llm_model_name,
+    #                     embedding_model_name=embedding_model_name,
+    #                     azure_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview",
+    #                     azure_embedding_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/text-embedding-3-small/embeddings?api-version=2023-05-15"
+    #                     )
 
-    # Startup a HippoRAG instance
-    hipporag = HippoRAG(save_dir=save_dir,
-                        llm_model_name=llm_model_name,
-                        embedding_model_name=embedding_model_name,
-                        azure_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview",
-                        azure_embedding_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/text-embedding-3-small/embeddings?api-version=2023-05-15"
-                        )
+    # print(hipporag.rag_qa(queries=queries,
+    #                               gold_docs=gold_docs,
+    #                               gold_answers=answers)[-2:])
 
-    new_docs = [
-        "Tom Hort's birthplace is Montebello.",
-        "Sam Hort's birthplace is Montebello.",
-        "Bill Hort's birthplace is Montebello.",
-        "Cam Hort's birthplace is Montebello.",
-        "Montebello is a part of Rockland County.."]
+    # # Startup a HippoRAG instance
+    # hipporag = HippoRAG(save_dir=save_dir,
+    #                     llm_model_name=llm_model_name,
+    #                     embedding_model_name=embedding_model_name,
+    #                     azure_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview",
+    #                     azure_embedding_endpoint="https://bernal-hipporag.openai.azure.com/openai/deployments/text-embedding-3-small/embeddings?api-version=2023-05-15"
+    #                     )
 
-    # Run indexing
-    hipporag.index(docs=new_docs)
+    # new_docs = [
+    #     "Tom Hort's birthplace is Montebello.",
+    #     "Sam Hort's birthplace is Montebello.",
+    #     "Bill Hort's birthplace is Montebello.",
+    #     "Cam Hort's birthplace is Montebello.",
+    #     "Montebello is a part of Rockland County.."]
 
-    print(hipporag.rag_qa(queries=queries,
-                          gold_docs=gold_docs,
-                          gold_answers=answers)[-2:])
+    # # Run indexing
+    # hipporag.index(docs=new_docs)
 
-    docs_to_delete = [
-        "Tom Hort's birthplace is Montebello.",
-        "Sam Hort's birthplace is Montebello.",
-        "Bill Hort's birthplace is Montebello.",
-        "Cam Hort's birthplace is Montebello.",
-        "Montebello is a part of Rockland County.."
-    ]
+    # print(hipporag.rag_qa(queries=queries,
+    #                       gold_docs=gold_docs,
+    #                       gold_answers=answers)[-2:])
 
-    hipporag.delete(docs_to_delete)
+    # docs_to_delete = [
+    #     "Tom Hort's birthplace is Montebello.",
+    #     "Sam Hort's birthplace is Montebello.",
+    #     "Bill Hort's birthplace is Montebello.",
+    #     "Cam Hort's birthplace is Montebello.",
+    #     "Montebello is a part of Rockland County.."
+    # ]
 
-    print(hipporag.rag_qa(queries=queries,
-                          gold_docs=gold_docs,
-                          gold_answers=answers)[-2:])
+    # hipporag.delete(docs_to_delete)
+
+    # print(hipporag.rag_qa(queries=queries,
+    #                       gold_docs=gold_docs,
+    #                       gold_answers=answers)[-2:])
 
 if __name__ == "__main__":
     main()
