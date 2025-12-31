@@ -22,14 +22,22 @@ def main():
     ]
 
     save_dir = 'outputs/local_test'  # Define save directory for HippoRAG objects (each LLM/Embedding model combination will create a new subdirectory)
-    llm_model_name = 'meta-llama/Llama-3.1-8B-Instruct'  # Any OpenAI model name
-    embedding_model_name = 'nvidia/NV-Embed-v2'  # Embedding model name (NV-Embed, GritLM or Contriever for now)
-
+    
+    # llm_model_name = 'meta-llama/Llama-3.1-8B-Instruct'  # Any OpenAI model name
+    # embedding_model_name = 'nvidia/NV-Embed-v2'  # Embedding model name (NV-Embed, GritLM or Contriever for now)
+    
+    # llm_model_name = "Qwen/Qwen2.5-14B-Instruct"
+    # llm_base_url="https://c5d5f3fc8969.ngrok-free.app/v1/chat/completions"
+    llm_model_name = "qwen/qwen-2.5-72b-instruct"
+    llm_base_url = 'https://openrouter.ai/api/v1'
+    embedding_model_name = 'VLLM/Qwen/Qwen3-Embedding-0.6B'
+    embedding_base_url="https://hyperdiastolic-nonfavorable-bernard.ngrok-free.dev/v1/embeddings"
     # Startup a HippoRAG instance
     hipporag = HippoRAG(save_dir=save_dir,
                         llm_model_name=llm_model_name,
                         embedding_model_name=embedding_model_name,
-                        llm_base_url="http://localhost:6578/v1"
+                        llm_base_url=llm_base_url,
+                        embedding_base_url=embedding_base_url
                         )
 
     # Run indexing
@@ -61,7 +69,8 @@ def main():
     print(hipporag.rag_qa(queries=queries,
                                   gold_docs=gold_docs,
                                   gold_answers=answers)[-2:])
-
+    exit()
+    
     # Startup a HippoRAG instance
     hipporag = HippoRAG(save_dir=save_dir,
                         llm_model_name=llm_model_name,

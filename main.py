@@ -75,8 +75,11 @@ def main():
     
     parser = argparse.ArgumentParser(description="HippoRAG retrieval and QA")
     parser.add_argument('--dataset', type=str, default='hotpotqa', help='Dataset name')
+    parser.add_argument('--max_examples', type=int, default=100)
+    parser.add_argument('--corpus_max_examples', type=int, default=1000)
     parser.add_argument('--llm_base_url', type=str, default=None, help='LLM base URL')
-    parser.add_argument('--llm_name', type=str, default='gpt-4o-mini', help='LLM name')
+    parser.add_argument('--llm_name', type=str, default='gpt-4o', help='LLM name')
+    parser.add_argument('--embedding_base_url', type=str, default=None, help='embedding base url')
     parser.add_argument('--embedding_name', type=str, default='nvidia/NV-Embed-v2', help='embedding model name')
     parser.add_argument('--force_index_from_scratch', type=str, default='false',
                         help='If set to True, will ignore all existing storage files and graph data and will rebuild from scratch.')
@@ -87,10 +90,15 @@ def main():
     args = parser.parse_args()
 
     dataset_name = args.dataset
+    max_examples = args.max_examples
+    corpus_max_examples = args.corpus_max_examples
     save_dir = args.save_dir
-    # llm_base_url = args.llm_base_url
-    llm_base_url=os.environ["OPENAI_BASE_URL"]
-    llm_name = args.llm_name    
+    
+    llm_base_url = args.llm_base_url
+    llm_name = args.llm_name 
+    embedding_base_url = args.embedding_base_url
+    embedding_name = args.embedding_name
+       
     if save_dir == 'outputs':
         save_dir = save_dir + '/' + dataset_name
     else:
@@ -102,12 +110,16 @@ def main():
         corpus = json.load(f)
     
     docs = [f"{doc['title']}\n{doc['text']}" for doc in corpus]
-
+    if corpus_max_examples > 0:
+        docs=docs[:corpus_max_examples]
+    
     force_index_from_scratch = string_to_bool(args.force_index_from_scratch)
     force_openie_from_scratch = string_to_bool(args.force_openie_from_scratch)
     
     # Prepare datasets and evaluation
     samples = json.load(open(f"reproduce/dataset/{dataset_name}.json", "r"))
+    if max_examples>0:
+        samples = samples[:max_examples]
     all_queries = [s['question'] for s in samples]
     
     gold_answers = get_gold_answers(samples)
@@ -119,33 +131,24 @@ def main():
 
     config = BaseConfig(
         save_dir=save_dir,
+        dataset=dataset_name,
         llm_base_url=llm_base_url,
         llm_name=llm_name,
-        dataset=dataset_name,
-        embedding_model_name=args.embedding_name,
+        embedding_base_url=embedding_base_url,
+        embedding_model_name=embedding_name,
         force_index_from_scratch=force_index_from_scratch,  # ignore previously stored index, set it to False if you want to use the previously stored index and embeddings
         force_openie_from_scratch=force_openie_from_scratch,
         rerank_dspy_file_path="src/hipporag/prompts/dspy_prompts/filter_llama3.3-70B-Instruct.json",
-        retrieval_top_k=300,
+        retrieval_top_k=100,
         linking_top_k=7,
-        max_qa_steps=5,
-        qa_top_k=7,
+        max_qa_steps=3,
+        qa_top_k=5,
         graph_type="facts_and_sim_passage_node_unidirectional",
         embedding_batch_size=8,
         max_new_tokens=None,
         corpus_len=len(corpus),
         openie_mode=args.openie_mode,
     )
-
-    # retrieval_top_k=200,
-    # linking_top_k=5,
-    # max_qa_steps=3,
-    # qa_top_k=5,
-        
-    # retrieval_top_k=300,
-    # linking_top_k=7,
-    # max_qa_steps=5,
-    # qa_top_k=7,
 
     logging.basicConfig(level=logging.INFO)
     

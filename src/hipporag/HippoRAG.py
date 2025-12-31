@@ -484,6 +484,9 @@ class HippoRAG:
         if gold_answers is not None:
             qa_em_evaluator = QAExactMatch(global_config=self.global_config)
             qa_f1_evaluator = QAF1Score(global_config=self.global_config)
+            for idx,q in enumerate(queries):
+                if isinstance(q, QuerySolution):
+                    queries[idx].gold_answers=gold_answers[idx]
 
         # Retrieving (if necessary)
         overall_retrieval_result = None
@@ -723,7 +726,20 @@ class HippoRAG:
 
             query_solution.answer = pred_ans
             queries_solutions.append(query_solution)
-
+        
+        res_list=[]
+        for qs in queries_solutions:
+            res_list.append({
+                "question":qs.question,
+                "gold":qs.gold_answers,
+                "pred":qs.answer,
+                "docs":qs.docs[:self.global_config.qa_top_k],
+            })
+                
+        with open("res.json","w") as f:
+            json.dump(res_list,f,indent=4)
+            
+        
         return queries_solutions, all_response_message, all_metadata
 
     def add_fact_edges(self, chunk_ids: List[str], chunk_triples: List[Tuple]):

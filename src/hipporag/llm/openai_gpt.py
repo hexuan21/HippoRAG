@@ -146,7 +146,8 @@ class CacheOpenAI(BaseLLM):
 
         if self.global_config.azure_endpoint is None:
             self.openai_client = OpenAI(base_url=self.llm_base_url, http_client=client, max_retries=self.max_retries)
-        else:            print("using Azure OpenAI endpoint:", self.global_config.azure_endpoint)
+        else:            
+            print("using Azure OpenAI endpoint:", self.global_config.azure_endpoint)
             self.openai_client = AzureOpenAI(api_version=self.global_config.azure_endpoint.split('api-version=')[1],
                                              azure_endpoint=self.global_config.azure_endpoint, max_retries=self.max_retries)
 

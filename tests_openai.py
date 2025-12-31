@@ -32,7 +32,7 @@ def main():
 
     # Run indexing
     hipporag.index(docs=docs)
-
+    
     # Separate Retrieval & QA
     queries = [
         "What is George Rankin's occupation?",
@@ -55,15 +55,6 @@ def main():
         ["Erik Hort's birthplace is Montebello.",
          "Montebello is a part of Rockland County."]
     ]
-
-    print(hipporag.rag_qa(queries=queries,
-                                  gold_docs=gold_docs,
-                                  gold_answers=answers)[-2:])
-
-    # Startup a HippoRAG instance
-    hipporag = HippoRAG(save_dir=save_dir,
-                        llm_model_name=llm_model_name,
-                        embedding_model_name=embedding_model_name)
 
     print(hipporag.rag_qa(queries=queries,
                                   gold_docs=gold_docs,
